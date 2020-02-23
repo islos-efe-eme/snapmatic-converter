@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { SnapConverter } from '../../../src'
 import { download } from './helpers/downloadFile'
+import { ERROR_MESSAGES } from '../../../src/helpers'
 
 jest.setTimeout(20000) // in milliseconds
 
@@ -43,17 +44,21 @@ describe('Snapmatic', () => {
       .map(f => fs.unlinkSync(src + f))
   })
 
-  // Getters
-  it('Get source path.', () => {
+  // Getters and setters
+  it('Get/set source path.', () => {
     const temp = new SnapConverter(src, dst)
     expect(typeof temp.srcPath).toBe('string')
     expect(temp.srcPath).toEqual(src)
+    temp.srcPath = 'foo'
+    expect(temp.srcPath).toEqual('foo')
   })
 
-  it('Get destination path.', () => {
+  it('Get/set destination path.', () => {
     const temp = new SnapConverter(src, dst)
     expect(typeof temp.dstPath).toBe('string')
     expect(temp.dstPath).toEqual(dst)
+    temp.dstPath = 'foo'
+    expect(temp.dstPath).toEqual('foo')
   })
 
   it('Get default source path.', () => {
@@ -100,6 +105,26 @@ describe('Snapmatic', () => {
     expect(filesAfter.filter(file => !file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
   })
 
+  it('Convert one file (invalid).', () => {
+    expect.assertions(1)
+    const temp = new SnapConverter(src, dst)
+    try {
+      temp.convertSingleFile()
+    } catch (error) {
+      expect(error.message).toBe(ERROR_MESSAGES.INVALID_FILENAME)
+    }
+  })
+
+  it('Convert one file (not found).', () => {
+    expect.assertions(1)
+    const temp = new SnapConverter(src, dst)
+    try {
+      temp.convertSingleFile('thisfiledoesnotexist')
+    } catch (error) {
+      expect(error.message).toBe(ERROR_MESSAGES.FILE_NOT_FOUND)
+    }
+  })
+
   it('Convert a set of files in directory.', () => {
     const temp = new SnapConverter(src, dst)
     const filesBefore = fs.readdirSync(dst)
@@ -109,5 +134,25 @@ describe('Snapmatic', () => {
     expect(filesAfter.length).toBe(testImages.length + testImages.length)
     expect(filesAfter.filter(file => file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
     expect(filesAfter.filter(file => !file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
+  })
+
+  it('Get all files with error', () => {
+    expect.assertions(1)
+    const temp = new SnapConverter()
+    try {
+      temp.getAllFiles()
+    } catch (error) {
+      expect(error.message).toBe(ERROR_MESSAGES.SRC_DIR_DOES_NOT_EXIST)
+    }
+  })
+
+  it('Convert all files with error', () => {
+    expect.assertions(1)
+    const temp = new SnapConverter('/tmp', dst)
+    try {
+      temp.convertAllFiles()
+    } catch (error) {
+      expect(error.message).toBe(ERROR_MESSAGES.FILES_NOT_FOUND)
+    }
   })
 })

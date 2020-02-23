@@ -52,8 +52,7 @@ class SnapConverter {
     SNAP_CONFIG.DEBUG && console.log('Analyzing Snapmatic file in folder.')
     const file = this.getFile(fileName)
     if (!file) {
-      SNAP_CONFIG.DEBUG && console.log('No Snapmatic picture found matching that name.')
-      return
+      throw new Error(ERROR_MESSAGES.FILE_NOT_FOUND)
     }
     SNAP_CONFIG.DEBUG && console.log('Creating destination folder if does not exist.')
     this.createDstDir(this.dstPath)
@@ -74,8 +73,7 @@ class SnapConverter {
     SNAP_CONFIG.DEBUG && console.log('Analyzing Snapmatic files in folder.')
     const files = this.getAllFiles()
     if (!files || !Array.isArray(files) || !files.length) {
-      SNAP_CONFIG.DEBUG && console.log('No Snapmatic pictures found.')
-      return
+      throw new Error(ERROR_MESSAGES.FILES_NOT_FOUND)
     }
     SNAP_CONFIG.DEBUG && console.log('Creating destination folder if does not exist.')
     this.createDstDir(this.dstPath)
@@ -141,12 +139,6 @@ class SnapConverter {
       .readdirSync(this.srcPath)
       .filter(file => file.startsWith('PGTA'))
 
-    return result
-  }
-
-  // Gets some of the Snapmatic files
-  getSomeFiles(files: string[]): string[] {
-    const result = this.getAllFiles().filter(file => files.includes(file))
     return result
   }
 
