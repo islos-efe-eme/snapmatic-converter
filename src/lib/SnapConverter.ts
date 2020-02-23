@@ -125,7 +125,7 @@ class SnapConverter {
   // Creates a new directory for storing the converted images.
   createDstDir(dir: string): void {
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir)
+      fs.mkdirSync(dir, { recursive: true })
     }
   }
 
@@ -154,15 +154,6 @@ class SnapConverter {
   getFile(fileName: string): string | undefined {
     const result = this.getAllFiles().find(file => file === fileName)
     return result
-  }
-
-  // Creates a new directory for storing the converted images.
-  deleteDstDir(dir: string): void {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir)
-      return
-    }
-    throw new Error(ERROR_MESSAGES.DIR_EXISTS)
   }
 
   // Converts a file from a Buffer
