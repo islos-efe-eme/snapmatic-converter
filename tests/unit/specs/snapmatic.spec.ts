@@ -71,9 +71,10 @@ describe('Snapmatic', () => {
   // Create
   it('Create new directory that does not exist.', () => {
     const temp = new SnapConverter()
-    const path = '/tmp/test'
-    temp.createDstDir.bind(temp.createDstDir, path)
+    const path = `${__dirname}/test`
+    temp.createDstDir(path)
     expect(fs.existsSync(path)).toBeTruthy()
+    fs.rmdirSync(path)
   })
 
   // Convert
