@@ -1,0 +1,35 @@
+version: 2.1
+
+jobs:
+  # Telegram bot
+  check_snapmatic:
+    docker:
+      - image: circleci/node:erbium-stretch
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn build
+      - run: yarn test:unit:ci --coverage
+      - run: yarn codecov
+      - store_artifacts:
+          path: coverage
+
+workflows:
+  version: 2
+
+  # Every push
+  build:
+    jobs:
+      - check_snapmatic
+
+  # Nightly (every night at 00:00)
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - check_snapmatic

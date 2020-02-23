@@ -1,0 +1,57 @@
+{
+  "name": "snapmatic-converter",
+  "version": "2.0.1",
+  "description": "GTA Snapmatic to JPEG converter",
+  "scripts": {
+    "lint": "eslint -c .eslintrc.js src/**/*.ts src/*.ts tests/**/*.ts",
+    "prebuild": "yarn lint",
+    "build": "rimraf ./dist && tsc",
+    "test:unit": "jest tests",
+    "test:unit:ci": "jest tests --ci --runInBand",
+    "prepublish": "yarn build"
+  },
+  "files": [
+    "dist/"
+  ],
+  "bin": {
+    "snapmatic-converter": "./dist/run.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/islos-efe-eme/snapmatic-converter.git"
+  },
+  "keywords": [
+    "gta",
+    "jpeg",
+    "snapmatic",
+    "file",
+    "converter",
+    "node",
+    "javascript",
+    "js",
+    "nodejs"
+  ],
+  "author": "islos-efe-eme",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/islos-efe-eme/snapmatic-converter/issues"
+  },
+  "homepage": "https://github.com/islos-efe-eme/snapmatic-converter#readme",
+  "devDependencies": {
+    "@types/jest": "^24.9.0",
+    "@types/node": "^13.5.0",
+    "@typescript-eslint/eslint-plugin": "^2.17.0",
+    "@typescript-eslint/parser": "^2.17.0",
+    "axios": "^0.19.2",
+    "codecov": "^3.6.5",
+    "eslint": "^6.8.0",
+    "eslint-plugin-eslint-comments": "^3.1.2",
+    "eslint-plugin-eslint-plugin": "^2.2.1",
+    "eslint-plugin-import": "^2.20.0",
+    "eslint-plugin-jest": "^23.6.0",
+    "jest": "^25.1.0",
+    "rimraf": "^3.0.1",
+    "ts-jest": "^25.0.0",
+    "typescript": "^3.7.5"
+  }
+}

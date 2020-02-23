@@ -1,0 +1,11 @@
+# Docker compose manifest
+version: '2'
+
+services:
+  snapmatic-converter:
+    build: .
+    hostname: snapmatic
+    volumes:
+      - ./test/src:/src/
+      - ./dst:/dst/
+
