@@ -72,3 +72,6 @@ bin
 dist
 
 .vscode
+
+# ignore files downloaded by unit tests
+tests/unit/specs/data
