@@ -75,3 +75,4 @@ dist
 
 # ignore files downloaded by unit tests
 tests/unit/specs/data
+junit.xml

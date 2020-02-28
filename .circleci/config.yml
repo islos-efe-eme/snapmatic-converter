@@ -9,7 +9,11 @@ jobs:
       - checkout
       - run: yarn install
       - run: yarn build
-      - run: yarn test:unit:ci --coverage
+      - store_artifacts:
+          path: dist
+      - run: yarn test:unit:ci --coverage --reporters="jest-junit"
+      - store_artifacts:
+          path: junit.xml
       - run: yarn codecov
       - store_artifacts:
           path: coverage
