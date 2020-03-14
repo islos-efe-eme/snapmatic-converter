@@ -1,7 +1,11 @@
 import fs from 'fs'
 import { SnapConverter } from '../../../src'
 import { download } from './helpers/downloadFile'
-import { ERROR_MESSAGES } from '../../../src/helpers'
+import {
+  ERROR_MESSAGES,
+  INFO_MESSAGES,
+  SNAP_CONFIG,
+} from '../../../src/helpers'
 
 jest.setTimeout(20000) // in milliseconds
 
@@ -16,8 +20,18 @@ const testImages = [
 
 const IMAGE_EXTENSION = 'jpg'
 
+// Used by console.debug outputs testing
+let lastConsoleOutput: string[] = []
+const originalConsoleDebug = console.debug
+
 describe('Snapmatic', () => {
   beforeAll(async (done) => {
+    // Mock console.debug native method
+    const mockedConsole = (output: string): void => {
+      lastConsoleOutput.push(output)
+    }
+    console.debug = mockedConsole
+
     // Create data directory before all
     if (!fs.existsSync(src)) {
       fs.mkdirSync(src)
@@ -31,12 +45,14 @@ describe('Snapmatic', () => {
     done()
   })
   afterAll(() => {
+    console.debug = originalConsoleDebug
     // Delete test images after all tests are done
     if (fs.existsSync(src)) {
       fs.rmdirSync(src, { recursive: true })
     }
   })
   afterEach(() => {
+    lastConsoleOutput = []
     // Delete generated files after each test
     const regex = /.*jpg.*$/
     fs.readdirSync(src)
@@ -45,45 +61,50 @@ describe('Snapmatic', () => {
   })
 
   // Getters and setters
-  it('Get/set source path.', () => {
+  test('Get/set source path.', () => {
     const temp = new SnapConverter(src, dst)
     expect(typeof temp.srcPath).toBe('string')
     expect(temp.srcPath).toEqual(src)
     temp.srcPath = 'foo'
     expect(temp.srcPath).toEqual('foo')
+    expect(lastConsoleOutput.length).toBe(0)
   })
 
-  it('Get/set destination path.', () => {
+  test('Get/set destination path.', () => {
     const temp = new SnapConverter(src, dst)
     expect(typeof temp.dstPath).toBe('string')
     expect(temp.dstPath).toEqual(dst)
     temp.dstPath = 'foo'
     expect(temp.dstPath).toEqual('foo')
+    expect(lastConsoleOutput.length).toBe(0)
   })
 
-  it('Get default source path.', () => {
+  test('Get default source path.', () => {
     const temp = new SnapConverter()
     expect(typeof temp.srcPath).toBe('string')
     expect(temp.srcPath).toEqual('/tmp/source')
+    expect(lastConsoleOutput.length).toBe(0)
   })
 
-  it('Get default destination path.', () => {
+  test('Get default destination path.', () => {
     const temp = new SnapConverter()
     expect(typeof temp.dstPath).toBe('string')
     expect(temp.dstPath).toEqual('/tmp/converted')
+    expect(lastConsoleOutput.length).toBe(0)
   })
 
   // Create
-  it('Create new directory that does not exist.', () => {
+  test('Create new directory that does not exist.', () => {
     const temp = new SnapConverter()
     const path = `${__dirname}/test`
     temp.createDstDir(path)
     expect(fs.existsSync(path)).toBeTruthy()
     fs.rmdirSync(path)
+    expect(lastConsoleOutput.length).toBe(0)
   })
 
   // Convert
-  it('Convert all files in directory.', () => {
+  test('Convert all files in directory.', () => {
     const temp = new SnapConverter(src, dst)
     const filesBefore = fs.readdirSync(dst)
     expect(filesBefore.length).toBe(testImages.length)
@@ -92,9 +113,16 @@ describe('Snapmatic', () => {
     expect(filesAfter.length).toBe(6)
     expect(filesAfter.filter(file => file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
     expect(filesAfter.filter(file => !file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
+
+    // Check console.debug outputs
+    expect(lastConsoleOutput.length).toBe(4)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.ANALYZING_FILE)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.CREATING_DST_FOLDER)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.CONVERTING_FILE)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.DONE)
   })
 
-  it('Convert one file in directory.', () => {
+  test('Convert one file in directory.', () => {
     const temp = new SnapConverter(src, dst)
     const filesBefore = fs.readdirSync(dst)
     expect(filesBefore.length).toBe(testImages.length)
@@ -103,29 +131,41 @@ describe('Snapmatic', () => {
     expect(filesAfter.length).toBe(4)
     expect(filesAfter.filter(file => file.includes(IMAGE_EXTENSION)).length).toBe(1)
     expect(filesAfter.filter(file => !file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
+
+    // Check console.debug outputs
+    expect(lastConsoleOutput.length).toBe(4)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.ANALYZING_FILE)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.CREATING_DST_FOLDER)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.CONVERTING_FILE)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.DONE)
   })
 
-  it('Convert one file (invalid).', () => {
-    expect.assertions(1)
+  test('Convert one file (invalid).', () => {
+    expect.assertions(2)
     const temp = new SnapConverter(src, dst)
     try {
       temp.convertSingleFile()
     } catch (error) {
       expect(error.message).toBe(ERROR_MESSAGES.INVALID_FILENAME)
     }
+    expect(lastConsoleOutput.length).toBe(0)
   })
 
-  it('Convert one file (not found).', () => {
-    expect.assertions(1)
+  test('Convert one file (not found).', () => {
+    expect.assertions(3)
     const temp = new SnapConverter(src, dst)
     try {
       temp.convertSingleFile('thisfiledoesnotexist')
     } catch (error) {
       expect(error.message).toBe(ERROR_MESSAGES.FILE_NOT_FOUND)
     }
+
+    // Check console.debug outputs
+    expect(lastConsoleOutput.length).toBe(1)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.ANALYZING_FILE)
   })
 
-  it('Convert a set of files in directory.', () => {
+  test('Convert a set of files in directory.', () => {
     const temp = new SnapConverter(src, dst)
     const filesBefore = fs.readdirSync(dst)
     expect(filesBefore.length).toBe(testImages.length)
@@ -134,25 +174,43 @@ describe('Snapmatic', () => {
     expect(filesAfter.length).toBe(testImages.length + testImages.length)
     expect(filesAfter.filter(file => file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
     expect(filesAfter.filter(file => !file.includes(IMAGE_EXTENSION)).length).toBe(testImages.length)
+
+    // Check console.debug outputs
+    expect(lastConsoleOutput.length).toBe(4)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.ANALYZING_FILE)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.CREATING_DST_FOLDER)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.CONVERTING_FILE)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.DONE)
   })
 
-  it('Get all files with error', () => {
-    expect.assertions(1)
+  test('Get all files with error', () => {
+    expect.assertions(2)
     const temp = new SnapConverter()
     try {
       temp.getAllFiles()
     } catch (error) {
       expect(error.message).toBe(ERROR_MESSAGES.SRC_DIR_DOES_NOT_EXIST)
     }
+
+    // Check console.debug outputs
+    expect(lastConsoleOutput.length).toBe(0)
   })
 
-  it('Convert all files with error', () => {
-    expect.assertions(1)
+  test('Convert all files with error', () => {
+    expect.assertions(3)
     const temp = new SnapConverter('/tmp', dst)
     try {
       temp.convertAllFiles()
     } catch (error) {
       expect(error.message).toBe(ERROR_MESSAGES.FILES_NOT_FOUND)
     }
+
+    // Check console.debug outputs
+    expect(lastConsoleOutput.length).toBe(1)
+    expect(lastConsoleOutput).toContain(INFO_MESSAGES.ANALYZING_FILE)
+  })
+
+  test('Verify snapConfig', () => {
+    expect(SNAP_CONFIG.DEBUG).toBe(1)
   })
 })

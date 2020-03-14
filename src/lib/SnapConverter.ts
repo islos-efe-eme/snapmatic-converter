@@ -3,6 +3,7 @@ import path from 'path'
 import {
   SNAP_CONFIG,
   ERROR_MESSAGES,
+  INFO_MESSAGES,
 } from '../helpers'
 class SnapConverter {
   private _srcPath: string
@@ -49,64 +50,51 @@ class SnapConverter {
     if (typeof fileName !== 'string') {
       throw new Error(ERROR_MESSAGES.INVALID_FILENAME)
     }
-    SNAP_CONFIG.DEBUG && console.log('Analyzing Snapmatic file in folder.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.ANALYZING_FILE)
     const file = this.getFile(fileName)
     if (!file) {
       throw new Error(ERROR_MESSAGES.FILE_NOT_FOUND)
     }
-    SNAP_CONFIG.DEBUG && console.log('Creating destination folder if does not exist.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.CREATING_DST_FOLDER)
     this.createDstDir(this.dstPath)
-    SNAP_CONFIG.DEBUG && console.log('Converting Snapmatic file to JPEG. ', file)
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.CONVERTING_FILE)
     const mergedPath = path.join(this.srcPath, file)
     const convertedImg = this.convert(this.fileToBuffer(mergedPath))
     this.writeFile(path.join(this.dstPath, file), convertedImg)
-    SNAP_CONFIG.DEBUG &&
-      console.log(
-        `Successfully converted the ${this.srcPath}/${file} image in ${this.dstPath}/${file}.jpg.`
-      )
-
-    SNAP_CONFIG.DEBUG && console.log('Done.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.DONE)
   }
 
   // Starts the transformation process iteratively over all Snapmatic files.
   convertAllFiles(): void {
-    SNAP_CONFIG.DEBUG && console.log('Analyzing Snapmatic files in folder.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.ANALYZING_FILE)
     const files = this.getAllFiles()
     if (!files || !Array.isArray(files) || !files.length) {
       throw new Error(ERROR_MESSAGES.FILES_NOT_FOUND)
     }
-    SNAP_CONFIG.DEBUG && console.log('Creating destination folder if does not exist.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.CREATING_DST_FOLDER)
     this.createDstDir(this.dstPath)
-    SNAP_CONFIG.DEBUG && console.log('Converting Snapmatic files to JPEG. ', files)
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.CONVERTING_FILE)
     for (const file of files) {
       const convertedImg = this.convert(
         this.fileToBuffer(path.join(this.srcPath, file))
       )
       this.writeFile(path.join(this.dstPath, file), convertedImg)
-      SNAP_CONFIG.DEBUG &&
-        console.log(
-          `Successfully converted the ${this.srcPath}/${file} image in ${this.dstPath}/${file}.jpg.`
-        )
     }
-    SNAP_CONFIG.DEBUG && console.log('Done.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.DONE)
   }
 
   // Starts the transformation process iteratively over some Snapmatic files.
   convertSomeFiles(files: string[]): void {
-    SNAP_CONFIG.DEBUG && console.log('Analyzing Snapmatic files in folder.')
-    SNAP_CONFIG.DEBUG && console.log('Creating destination folder if does not exist.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.ANALYZING_FILE)
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.CREATING_DST_FOLDER)
     this.createDstDir(this.dstPath)
-    SNAP_CONFIG.DEBUG && console.log('Converting Snapmatic files to JPEG. ', files)
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.CONVERTING_FILE)
     for (const file of files) {
       const pathJoin = path.join(this.srcPath, file)
       const convertedImg = this.convert(this.fileToBuffer(pathJoin))
       this.writeFile(pathJoin, convertedImg)
-      SNAP_CONFIG.DEBUG &&
-        console.log(
-          `Successfully converted the ${this.srcPath}/${file} image in ${this.dstPath}/${file}.jpg.`
-        )
     }
-    SNAP_CONFIG.DEBUG && console.log('Done.')
+    SNAP_CONFIG.DEBUG && console.debug(INFO_MESSAGES.DONE)
   }
 
   // Writes the converted image into the destination path.
